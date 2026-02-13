@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register & Login Test</title>
+</head>
+<body>
+
+<h2>Register</h2>
+<button onclick="register()">Register</button>
+
+<h2>Login</h2>
+<button onclick="login()">Login</button>
+
+<script>
+function register() {
+    fetch("http://localhost:8080/api/users/register", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    name: "Ranga",
+    email: "ranga@gmail.com",
+    password: "1234",
+    role: "USER"
+  })
+})
+.then(res => res.json())
+.then(data => console.log("REGISTER:", data))
+.catch(err => console.error(err));
+
+}
+
+
+</script>
+
+</body>
+</html>
