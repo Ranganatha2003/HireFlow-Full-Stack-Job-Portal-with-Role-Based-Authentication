@@ -1,27 +1,27 @@
 package com.ranga.hireflow.util;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
+import com.ranga.hireflow.service.CustomUserDetailsService;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final CustomUserDetailsService userDetailsService;
 
-    public JwtFilter(JwtUtil jwtUtil) {
+    public JwtFilter(JwtUtil jwtUtil,
+                     CustomUserDetailsService userDetailsService) {
         this.jwtUtil = jwtUtil;
+        this.userDetailsService = userDetailsService;
     }
 
     @Override
@@ -32,10 +32,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String uri = request.getRequestURI();
 
-        // 🔥 SKIP LOGIN & REGISTER
         if (uri.equals("/api/users/login") ||
             uri.equals("/api/users/register")) {
-
             filterChain.doFilter(request, response);
             return;
         }
@@ -50,18 +48,29 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 String email = jwtUtil.extractEmail(token);
 
-                UsernamePasswordAuthenticationToken auth =
+                UserDetails userDetails =
+                        userDetailsService.loadUserByUsername(email);
+
+                // 🔥 DEBUG (you can remove later)
+                System.out.println("ROLE → " + userDetails.getAuthorities());
+                System.out.println("EMAIL → " + email);
+System.out.println("AUTHORITIES → " + userDetails.getAuthorities());
+
+
+                UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
-                                new User(email, "", Collections.emptyList()),
+                                userDetails,
                                 null,
-                                Collections.emptyList()
+                                userDetails.getAuthorities()
                         );
 
-                auth.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
+                authToken.setDetails(
+                        new WebAuthenticationDetailsSource()
+                                .buildDetails(request)
                 );
 
-                SecurityContextHolder.getContext().setAuthentication(auth);
+                SecurityContextHolder.getContext()
+                        .setAuthentication(authToken);
             }
         }
 
