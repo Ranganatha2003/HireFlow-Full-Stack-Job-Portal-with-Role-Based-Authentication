@@ -1,6 +1,7 @@
 package com.ranga.hireflow.service;
 
 import com.ranga.hireflow.model.Job;
+import com.ranga.hireflow.repository.ApplicationRepository;
 import com.ranga.hireflow.repository.JobRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,9 @@ public class JobService {
 
     @Autowired
     private JobRepository jobRepository;
+    @Autowired
+private ApplicationRepository applicationRepository;
+
 
     // ➕ ADD JOB
     public Job addJob(Job job) {
@@ -50,4 +54,24 @@ public class JobService {
     public void deleteJob(Long id) {
         jobRepository.deleteById(id);
     }
+    public List<Job> getJobsForUser(String email) {
+
+    List<Job> jobs = jobRepository.findAll();
+
+    List<Long> appliedJobIds =
+            applicationRepository.findByApplicantEmail(email)
+                                 .stream()
+                                 .map(app -> app.getJob().getId())
+                                 .toList();
+
+    jobs.forEach(job -> {
+        if (appliedJobIds.contains(job.getId())) {
+            job.setApplied(true);
+        }
+        System.out.println("JOB " + job.getId() + " APPLIED = " + job.isApplied());
+    });
+
+    return jobs;
+}
+
 }

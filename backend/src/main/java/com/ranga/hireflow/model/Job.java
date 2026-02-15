@@ -22,6 +22,9 @@ public class Job {
     private String skillsRequired;
 
     private LocalDateTime postedDate = LocalDateTime.now();
+    @Transient
+private boolean applied;
+
 
     public Job() {}
 
@@ -47,4 +50,12 @@ public class Job {
     public void setSkillsRequired(String skillsRequired) { this.skillsRequired = skillsRequired; }
 
     public LocalDateTime getPostedDate() { return postedDate; }
+    public boolean isApplied() {
+    return applied;
+}
+
+public void setApplied(boolean applied) {
+    this.applied = applied;
+}
+
 }

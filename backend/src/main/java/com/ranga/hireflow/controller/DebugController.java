@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class DebugController {
 
     @GetMapping("/api/debug")
-    public Object debug(Authentication authentication) {
+    public Authentication debug(Authentication authentication) {
         return authentication;
     }
 }

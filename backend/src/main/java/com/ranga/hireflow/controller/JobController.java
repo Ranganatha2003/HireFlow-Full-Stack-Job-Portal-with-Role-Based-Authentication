@@ -4,6 +4,7 @@ import com.ranga.hireflow.model.Job;
 import com.ranga.hireflow.service.JobService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,13 +23,21 @@ public class JobController {
         return jobService.addJob(job);
     }
 
-    // 👤 PUBLIC → VIEW ALL JOBS
+    // 👤 VIEW JOBS (PUBLIC + LOGGED-IN USER SUPPORT)
     @GetMapping("/jobs")
-    public List<Job> getAllJobs() {
-        return jobService.getAllJobs();
+    public List<Job> getAllJobs(Authentication authentication) {
+
+        // 🔓 If not logged in → normal job list
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return jobService.getAllJobs();
+        }
+
+        // 👤 If logged in → return jobs with applied flag
+        String email = authentication.getName();
+        return jobService.getJobsForUser(email);
     }
 
-    // 👤 PUBLIC → VIEW JOB BY ID
+    // 👤 VIEW JOB BY ID
     @GetMapping("/jobs/{id}")
     public Job getJobById(@PathVariable Long id) {
         return jobService.getJobById(id);
